@@ -2,6 +2,9 @@
 
 clsThreadSerialPort::clsThreadSerialPort()
 {
+
+    _setting_default = new QSettings("myapp.ini", QSettings::IniFormat);
+
     serial.setPortName("COM5");
     serial.open(QIODevice::ReadWrite);
 
@@ -20,6 +23,10 @@ clsThreadSerialPort::~clsThreadSerialPort()
     msleep(3000);
     this->thread()->quit();
     this->thread()->wait(3000);
+#if __APPLE__
+    this->terminate();
+#else
+#endif
 }
 
 void clsThreadSerialPort::run()
@@ -93,13 +100,13 @@ void clsThreadSerialPort::slot_send_to_qml(QString msg)
 void clsThreadSerialPort::set_setting_value(QString msg_key, QString msg_value)
 {
     qDebug() << msg_key << msg_value;
-    _setting_default.setValue(msg_key, msg_value);
+    _setting_default->setValue(msg_key, msg_value);
 }
 
 QString clsThreadSerialPort::get_setting_value(QString msg_key)
 {
-    qDebug() << msg_key << _setting_default.value(msg_key).value<QString>();
-    return _setting_default.value(msg_key).value<QString>();
-
+    qDebug() << msg_key << _setting_default->value(msg_key).value<QString>();
+    return _setting_default->value(msg_key).value<QString>();
 }
+
 

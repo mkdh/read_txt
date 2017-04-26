@@ -23,7 +23,7 @@ private:
     QSerialPort serial;
 //    QElapsedTimer timer;
     bool _b_running_time = true;
-    QSettings _setting_default;
+    QSettings* _setting_default;
 
 public slots:
     void slot_send_to_qml(QString msg);

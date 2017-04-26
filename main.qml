@@ -29,20 +29,94 @@ ApplicationWindow {
         root_app.save_setting()
     }
 
+    function jump_to_next_page()
+    {
+        if(flickable.contentY + flickable.height < flickable.contentHeight)
+        {
+            flickable.contentY = flickable.contentY + flickable.height
+        }
+    }
+
+    function jump_to_previous_page()
+    {
+        if(flickable.contentY - flickable.height > 0)
+        {
+            flickable.contentY = flickable.contentY - flickable.height
+        }
+        else
+        {
+            flickable.contentY = 0
+        }
+    }
+
+
+    readonly property real lineHeight: (myText.implicitHeight - 2 * myText.textMargin) / myText.lineCount
+
+    function jump_to_next_column()
+    {
+        if(flickable.contentY +  lineHeight < flickable.contentHeight - flickable.height)
+        {
+            flickable.contentY = flickable.contentY +  lineHeight
+        }
+    }
+
+    function jump_to_previous_column()
+    {
+        if(flickable.contentY - lineHeight > 0)
+        {
+            flickable.contentY = flickable.contentY -  lineHeight
+        }
+        else
+        {
+            flickable.contentY = 0
+        }
+    }
+
+
+
 
     function load_setting()
     {
-        btn_load.content_y= g_cls_thread_serial_port.get_setting_value("CONTENT_Y")
-        myText.color = g_cls_thread_serial_port.get_setting_value("FONT_COLOR")
-        rect_textarea.color = g_cls_thread_serial_port.get_setting_value("BACKGROUND_COLOR")
-        myFile.source = g_cls_thread_serial_port.get_setting_value("FILE_PATH")
-        myText.text =  myFile.read();
-        root_app.width = g_cls_thread_serial_port.get_setting_value("WINDOW_WIDTH")
-        root_app.height = g_cls_thread_serial_port.get_setting_value("WINDOW_HEIGHT")
-        flickable.contentY = btn_load.content_y
-        root_app.x =  g_cls_thread_serial_port.get_setting_value("POS_X")
-        root_app.y =  g_cls_thread_serial_port.get_setting_value("POS_Y")
+        if(g_cls_thread_serial_port.get_setting_value("FILE_PATH") != "")
+        {
+            myFile.source = g_cls_thread_serial_port.get_setting_value("FILE_PATH")
+            myText.text =  myFile.read();
+        }
 
+        if(g_cls_thread_serial_port.get_setting_value("FONT_SIZE") != "")
+            myText.font.pointSize = g_cls_thread_serial_port.get_setting_value("FONT_SIZE")
+
+
+        if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "")
+            btn_load.content_y = g_cls_thread_serial_port.get_setting_value("CONTENT_Y")
+
+        if(g_cls_thread_serial_port.get_setting_value("FONT_COLOR") != "")
+            myText.color = g_cls_thread_serial_port.get_setting_value("FONT_COLOR")
+
+        if(g_cls_thread_serial_port.get_setting_value("BACKGROUND_COLOR") != "")
+            rect_textarea.color = g_cls_thread_serial_port.get_setting_value("BACKGROUND_COLOR")
+
+
+
+        if(g_cls_thread_serial_port.get_setting_value("WINDOW_WIDTH") != "")
+            root_app.width = g_cls_thread_serial_port.get_setting_value("WINDOW_WIDTH")
+
+        if(g_cls_thread_serial_port.get_setting_value("WINDOW_HEIGHT") != "")
+            root_app.height = g_cls_thread_serial_port.get_setting_value("WINDOW_HEIGHT")
+
+
+        if(g_cls_thread_serial_port.get_setting_value("POS_X") != "")
+            root_app.x =  g_cls_thread_serial_port.get_setting_value("POS_X")
+
+        if(g_cls_thread_serial_port.get_setting_value("POS_Y") != "")
+            root_app.y =  g_cls_thread_serial_port.get_setting_value("POS_Y")
+
+        if(g_cls_thread_serial_port.get_setting_value("FOLDER_PATH") != "")
+            fileDialog.folder =  g_cls_thread_serial_port.get_setting_value("FOLDER_PATH")
+
+
+        if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "")
+            flickable.contentY = btn_load.content_y
 
     }
 
@@ -50,7 +124,7 @@ ApplicationWindow {
     {
         g_cls_thread_serial_port.set_setting_value("WINDOW_WIDTH" ,root_app.width)
         g_cls_thread_serial_port.set_setting_value("WINDOW_HEIGHT" ,root_app.height)
-        g_cls_thread_serial_port.set_setting_value("CONTENT_Y" ,flickable.contentY)
+        g_cls_thread_serial_port.set_setting_value("CONTENT_Y" ,Math.round(flickable.contentY))
         g_cls_thread_serial_port.set_setting_value("POS_X" ,root_app.x)
         g_cls_thread_serial_port.set_setting_value("POS_Y" ,root_app.y)
 
@@ -81,10 +155,10 @@ ApplicationWindow {
         onSignal_send_to_qml: {
             //txt_debug_message.text += msg + "\r\n"
             txt_debug_message.text = msg + "\r\n------------" +  txt_debug_message.text + "\r\n"
-
-
             txt_debug_message.text = get_short_text(txt_debug_message.text , 1000)
         }
+
+
     }
     SwipeView {
         id: swipeView
@@ -115,6 +189,8 @@ ApplicationWindow {
                                 myFile.source = "" + fileDialog.fileUrls
                                 myText.text =  myFile.read();
                                 g_cls_thread_serial_port.set_setting_value("FILE_PATH" ,myFile.source)
+                                folder = fileDialog.folder
+                                g_cls_thread_serial_port.set_setting_value("FOLDER_PATH" ,folder)
 
                             }
                             onRejected: {
@@ -183,6 +259,48 @@ ApplicationWindow {
                             root_app.save_setting()
                         }
                     }
+
+
+
+
+                    Button {
+                        text: "font -"
+                        height: rect_menu.height
+
+                        onClicked: {
+                            if(myText.font.pointSize > 2)
+                            {
+                                myText.font.pointSize -= 1
+                                g_cls_thread_serial_port.set_setting_value("FONT_SIZE" ,myText.font.pointSize)
+                            }
+                        }
+                    }
+
+                    Button {
+                        text: "font +"
+                        height: rect_menu.height
+
+                        onClicked: {
+                            myText.font.pointSize += 1
+                            g_cls_thread_serial_port.set_setting_value("FONT_SIZE" ,myText.font.pointSize)
+
+                        }
+                    }
+
+                    Button {
+                        id: btn_test
+                        text: "btn_test"
+                        height: rect_menu.height
+
+                        onClicked: {
+                            //                            root_app.jump_to_previous_page()
+                            //                            jump_to_next_column()
+                            //                            jump_to_previous_column()
+                            //                            jump_to_next_page()
+                            jump_to_previous_page()
+                        }
+                    }
+
                 }
             }
             Rectangle {
@@ -195,23 +313,49 @@ ApplicationWindow {
                 anchors.bottom: parent.bottom
                 Flickable {
                     id: flickable
+                    property bool _b_update_default_content_y: false
+
                     Component.onCompleted: {
+                        console.log("+++++>" + btn_load.content_y + ", " + contentY)
+                        _b_update_default_content_y = true
 
                     }
-
                     anchors.fill: parent
                     onContentYChanged: {
-                        //                        g_cls_thread_serial_port.set_setting_value("CONTENT_Y" ,flickable.contentY)
+                        console.log("----->" + btn_load.content_y + ", " + contentY)
+
+
+                        if( btn_load.content_y != 0
+                                && contentY >= 0
+                                && btn_load.content_y != contentY
+                                && btn_load.content_y - 0 != btn_load.content_y - contentY
+                                )
+                        {
+                            _b_update_default_content_y = false
+                        }
+
+                        if(_b_update_default_content_y && contentY == 0 )
+                        {
+                            contentY = btn_load.content_y
+                        }
+
+
+
+
+
+
                     }
 
                     TextArea.flickable: TextArea {
+
+
                         id: myText
                         anchors.fill: parent
                         wrapMode:TextEdit.WrapAnywhere
                         text: ""
                     }
 
-                    ScrollBar.vertical: ScrollBar { }
+                    ScrollBar.vertical: ScrollBar { id: scrollBar }
                 }
 
 

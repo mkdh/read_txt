@@ -1,6 +1,7 @@
 #include "cls_file_io.h"
 #include <QFile>
 #include <QTextStream>
+
 clsFileIO::clsFileIO()
 {
 
@@ -18,7 +19,11 @@ QString clsFileIO::read()
         emit error("source is empty");
         return QString();
     }
+#if __APPLE__
     mSource = mSource.replace("file://","");
+#else
+    mSource = mSource.replace("file:///","");
+#endif
 
     QFile file(mSource);
     QString fileContent;
@@ -35,6 +40,7 @@ QString clsFileIO::read()
         emit error("Unable to open the file");
         return QString();
     }
+
     return fileContent;
 }
 /*
