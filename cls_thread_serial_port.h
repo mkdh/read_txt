@@ -21,7 +21,7 @@ public:
 private:
     void run();
     QSerialPort serial;
-//    QElapsedTimer timer;
+    //    QElapsedTimer timer;
     bool _b_running_time = true;
     QSettings* _setting_default;
 
@@ -31,7 +31,7 @@ public slots:
     QString get_setting_value(QString msg_key);
 signals:
     void signal_send_to_qml(QString msg);
-
+    void signal_send_command(QString msg);
 };
 
 #endif // CLS_THREAD_SERIAL_PORT_H

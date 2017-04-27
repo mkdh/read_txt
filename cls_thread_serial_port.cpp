@@ -82,6 +82,7 @@ void clsThreadSerialPort::run()
                     if(command.length() > 0)
                     {
                         slot_send_to_qml("command: " + command);
+                        emit signal_send_command(command);
                     }
                     compare_input = compare_input.right(compare_input.length() - compare_input.indexOf("\r\n") - 2);
                 }

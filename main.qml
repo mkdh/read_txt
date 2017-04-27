@@ -12,6 +12,7 @@ ApplicationWindow {
     visible: true
     width: 640
     height: 480
+    title: qsTr("Hello World")
 
     onWidthChanged: {
         //        g_cls_thread_serial_port.set_setting_value("WINDOW_WIDTH" ,root_app.width)
@@ -28,20 +29,34 @@ ApplicationWindow {
     onClosing: {
         root_app.save_setting()
     }
-
+    readonly property real lineHeight: (myText.implicitHeight - 2 * myText.textMargin) / myText.lineCount
+    property bool b_show_footer: false
     function jump_to_next_page()
     {
-        if(flickable.contentY + flickable.height < flickable.contentHeight)
+        flickable._b_update_default_content_y = false
+        var count_page_column = Math.round(flickable.height / lineHeight) - 1
+
+        //        if(flickable.contentY + flickable.height - lineHeight - 2 * myText.textMargin < flickable.contentHeight)
+        //        {
+        //            flickable.contentY = flickable.contentY + flickable.height - lineHeight - 2 * myText.textMargin
+        //        }
+        var move_height = count_page_column * lineHeight
+        if(flickable.contentY + move_height < flickable.contentHeight)
         {
-            flickable.contentY = flickable.contentY + flickable.height
+            flickable.contentY = flickable.contentY + move_height
         }
     }
 
     function jump_to_previous_page()
     {
-        if(flickable.contentY - flickable.height > 0)
+        flickable._b_update_default_content_y = false
+
+        var count_page_column = Math.round(flickable.height / lineHeight) - 1
+        var move_height = count_page_column * lineHeight
+
+        if(flickable.contentY - move_height > 0)
         {
-            flickable.contentY = flickable.contentY - flickable.height
+            flickable.contentY = flickable.contentY - move_height
         }
         else
         {
@@ -49,11 +64,10 @@ ApplicationWindow {
         }
     }
 
-
-    readonly property real lineHeight: (myText.implicitHeight - 2 * myText.textMargin) / myText.lineCount
-
     function jump_to_next_column()
     {
+        flickable._b_update_default_content_y = false
+
         if(flickable.contentY +  lineHeight < flickable.contentHeight - flickable.height)
         {
             flickable.contentY = flickable.contentY +  lineHeight
@@ -62,6 +76,8 @@ ApplicationWindow {
 
     function jump_to_previous_column()
     {
+        flickable._b_update_default_content_y = false
+
         if(flickable.contentY - lineHeight > 0)
         {
             flickable.contentY = flickable.contentY -  lineHeight
@@ -72,9 +88,6 @@ ApplicationWindow {
         }
     }
 
-
-
-
     function load_setting()
     {
         if(g_cls_thread_serial_port.get_setting_value("FILE_PATH") != "")
@@ -83,9 +96,8 @@ ApplicationWindow {
             myText.text =  myFile.read();
         }
 
-        if(g_cls_thread_serial_port.get_setting_value("FONT_SIZE") != "")
-            myText.font.pointSize = g_cls_thread_serial_port.get_setting_value("FONT_SIZE")
-
+        if(g_cls_thread_serial_port.get_setting_value("Font_Point_Size") != "")
+            myText.font.pointSize = g_cls_thread_serial_port.get_setting_value("Font_Point_Size")
 
         if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "")
             btn_load.content_y = g_cls_thread_serial_port.get_setting_value("CONTENT_Y")
@@ -95,8 +107,6 @@ ApplicationWindow {
 
         if(g_cls_thread_serial_port.get_setting_value("BACKGROUND_COLOR") != "")
             rect_textarea.color = g_cls_thread_serial_port.get_setting_value("BACKGROUND_COLOR")
-
-
 
         if(g_cls_thread_serial_port.get_setting_value("WINDOW_WIDTH") != "")
             root_app.width = g_cls_thread_serial_port.get_setting_value("WINDOW_WIDTH")
@@ -127,11 +137,9 @@ ApplicationWindow {
         g_cls_thread_serial_port.set_setting_value("CONTENT_Y" ,Math.round(flickable.contentY))
         g_cls_thread_serial_port.set_setting_value("POS_X" ,root_app.x)
         g_cls_thread_serial_port.set_setting_value("POS_Y" ,root_app.y)
-
     }
 
 
-    title: qsTr("Hello World")
 
     function get_short_text(full_text, limit_number) {
 
@@ -145,11 +153,6 @@ ApplicationWindow {
         }
     }
 
-
-
-
-
-
     Connections{
         target: g_cls_thread_serial_port
         onSignal_send_to_qml: {
@@ -157,9 +160,60 @@ ApplicationWindow {
             txt_debug_message.text = msg + "\r\n------------" +  txt_debug_message.text + "\r\n"
             txt_debug_message.text = get_short_text(txt_debug_message.text , 1000)
         }
+        property string old_command: old_command
 
+        onSignal_send_command: {
+            console.log(msg)
+            root_app.title = msg
+            if(msg == " FORWARD" || msg == " -OK-")
+            {
 
+                old_command = msg
+                root_app.jump_to_previous_page()
+            }
+            else if(msg == " REVERSE")
+            {
+                old_command = msg
+                root_app.jump_to_next_page()
+            }
+            else if(msg == " RIGHT")
+            {
+                old_command = msg
+                root_app.jump_to_next_column()
+            }
+            else if(msg == " LEFT")
+            {
+                old_command = msg
+                root_app.jump_to_previous_column()
+            }
+            else if(msg == " REPEAT")
+            {
+                root_app.title = msg + " " + old_command
+
+                if(old_command == " FORWARD")
+                {
+                    root_app.jump_to_previous_page()
+                }
+                else if(old_command == " REVERSE" || old_command == " -OK-")
+                {
+                    root_app.jump_to_next_page()
+                }
+                else if(old_command == " RIGHT")
+                {
+                    root_app.jump_to_next_column()
+                }
+                else if(old_command == " LEFT")
+                {
+                    root_app.jump_to_previous_column()
+                }
+            }
+            if(msg == " 0")
+            {
+                b_show_footer = !b_show_footer
+            }
+        }
     }
+
     SwipeView {
         id: swipeView
         anchors.fill: parent
@@ -191,7 +245,6 @@ ApplicationWindow {
                                 g_cls_thread_serial_port.set_setting_value("FILE_PATH" ,myFile.source)
                                 folder = fileDialog.folder
                                 g_cls_thread_serial_port.set_setting_value("FOLDER_PATH" ,folder)
-
                             }
                             onRejected: {
                                 console.log("Canceled")
@@ -245,11 +298,9 @@ ApplicationWindow {
                         height: rect_menu.height
                         property real content_y: 0
                         onClicked: {
-
                             root_app.load_setting()
                         }
                     }
-
 
                     Button {
                         text: "save setting"
@@ -260,9 +311,6 @@ ApplicationWindow {
                         }
                     }
 
-
-
-
                     Button {
                         text: "font -"
                         height: rect_menu.height
@@ -271,7 +319,7 @@ ApplicationWindow {
                             if(myText.font.pointSize > 2)
                             {
                                 myText.font.pointSize -= 1
-                                g_cls_thread_serial_port.set_setting_value("FONT_SIZE" ,myText.font.pointSize)
+                                g_cls_thread_serial_port.set_setting_value("Font_Point_Size" , myText.font.pointSize)
                             }
                         }
                     }
@@ -282,8 +330,7 @@ ApplicationWindow {
 
                         onClicked: {
                             myText.font.pointSize += 1
-                            g_cls_thread_serial_port.set_setting_value("FONT_SIZE" ,myText.font.pointSize)
-
+                            g_cls_thread_serial_port.set_setting_value("Font_Point_Size" , myText.font.pointSize)
                         }
                     }
 
@@ -293,16 +340,22 @@ ApplicationWindow {
                         height: rect_menu.height
 
                         onClicked: {
-                            //                            root_app.jump_to_previous_page()
-                            //                            jump_to_next_column()
-                            //                            jump_to_previous_column()
-                            //                            jump_to_next_page()
-                            jump_to_previous_page()
+                            b_show_footer = ! b_show_footer
                         }
                     }
-
                 }
             }
+
+            Rectangle {
+                id: rect_current_contex_y
+                z: 2
+                color: "red"
+                width: 15
+                height: 30
+                anchors.right: rect_textarea.right
+                opacity: 0.5
+            }
+
             Rectangle {
                 id: rect_textarea
                 //http://stackoverflow.com/questions/8894531/reading-a-line-from-a-txt-or-csv-file-in-qml-qt-quick
@@ -314,16 +367,14 @@ ApplicationWindow {
                 Flickable {
                     id: flickable
                     property bool _b_update_default_content_y: false
+                    anchors.fill: rect_textarea
 
                     Component.onCompleted: {
                         console.log("+++++>" + btn_load.content_y + ", " + contentY)
                         _b_update_default_content_y = true
 
                     }
-                    anchors.fill: parent
                     onContentYChanged: {
-                        console.log("----->" + btn_load.content_y + ", " + contentY)
-
 
                         if( btn_load.content_y != 0
                                 && contentY >= 0
@@ -338,37 +389,26 @@ ApplicationWindow {
                         {
                             contentY = btn_load.content_y
                         }
-
-
-
-
-
-
+                        rect_current_contex_y.y = -rect_current_contex_y.height * 0.5 + rect_textarea.y + flickable.height * contentY / (flickable.contentHeight - flickable.height )
+                        console.log(rect_current_contex_y.y)
                     }
 
                     TextArea.flickable: TextArea {
-
-
                         id: myText
-                        anchors.fill: parent
                         wrapMode:TextEdit.WrapAnywhere
                         text: ""
+                        font.pointSize: 19
                     }
 
                     ScrollBar.vertical: ScrollBar { id: scrollBar }
                 }
-
-
 
                 FileIO {
                     id: myFile
                     source: "my_file.txt"
                     onError: console.log(msg)
                 }
-
             }
-
-
         }
 
         Page {
@@ -398,6 +438,17 @@ ApplicationWindow {
 
     footer: TabBar {
         id: tabBar
+        height: {
+            if(b_show_footer)
+            {
+                return 30
+            }
+            else
+            {
+                return 0
+            }
+        }
+
         currentIndex: swipeView.currentIndex
         TabButton {
             text: qsTr("First")
@@ -406,8 +457,4 @@ ApplicationWindow {
             text: qsTr("Second")
         }
     }
-
-
-
-
 }
