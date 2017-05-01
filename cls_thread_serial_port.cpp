@@ -2,19 +2,7 @@
 
 clsThreadSerialPort::clsThreadSerialPort()
 {
-
     _setting_default = new QSettings("myapp.ini", QSettings::IniFormat);
-
-    serial.setPortName("COM5");
-    serial.open(QIODevice::ReadWrite);
-
-    serial.setBaudRate(QSerialPort::Baud9600);
-    serial.setDataBits(QSerialPort::Data8);
-    serial.setParity(QSerialPort::NoParity);
-    serial.setStopBits(QSerialPort::OneStop);
-    //http://stackoverflow.com/questions/28770862/qserialport-proper-sending-of-many-lines
-    serial.setFlowControl(QSerialPort::SoftwareControl);//serial.setFlowControl(QSerialPort::NoFlowControl);
-
 }
 
 clsThreadSerialPort::~clsThreadSerialPort()
@@ -33,17 +21,6 @@ void clsThreadSerialPort::run()
 {
     slot_send_to_qml(QString(__func__) + ": trying open serial port...");
 
-    while(!serial.isOpen())
-    {
-        if(_b_running_time == false)
-        {
-            return;
-        }
-
-        serial.open(QIODevice::ReadWrite);
-
-    }
-
     if (serial.isOpen() && serial.isWritable())
     {
         slot_send_to_qml("Serial is open");
@@ -57,13 +34,6 @@ void clsThreadSerialPort::run()
             {
                 return;
             }
-            //output = "a";
-            //serial.write(output);
-            //serial.flush();
-            //timer.start();
-            // Sleep(80);
-            // qDebug() << timer.elapsed();
-            // serial.waitForBytesWritten(100);
             serial.waitForReadyRead(100);
 
             if(serial.bytesAvailable()> 0)
@@ -90,7 +60,6 @@ void clsThreadSerialPort::run()
 
         }//while
     }//if
-
 }
 
 void clsThreadSerialPort::slot_send_to_qml(QString msg)
@@ -108,6 +77,32 @@ QString clsThreadSerialPort::get_setting_value(QString msg_key)
 {
     qDebug() << msg_key << _setting_default->value(msg_key).value<QString>();
     return _setting_default->value(msg_key).value<QString>();
+}
+
+bool clsThreadSerialPort::open_serial_port()
+{
+    serial.setPortName("COM5");
+    serial.setBaudRate(QSerialPort::Baud9600);
+    serial.setDataBits(QSerialPort::Data8);
+    serial.setParity(QSerialPort::NoParity);
+    serial.setStopBits(QSerialPort::OneStop);
+    //http://stackoverflow.com/questions/28770862/qserialport-proper-sending-of-many-lines
+    serial.setFlowControl(QSerialPort::SoftwareControl);//serial.setFlowControl(QSerialPort::NoFlowControl);
+
+    if(!serial.isOpen())
+    {
+        serial.open(QIODevice::ReadWrite);
+    }
+
+    if(serial.isOpen())
+    {
+        this->start();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
