@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     g_cls_thread_serial_port = new clsThreadSerialPort;
     ctext->setContextProperty("g_cls_thread_serial_port", g_cls_thread_serial_port);
 
-
     qmlRegisterType<clsFileIO, 1>("FileIO", 1, 0, "FileIO");
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 

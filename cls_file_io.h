@@ -16,7 +16,6 @@ public:
     clsFileIO();
 
     Q_INVOKABLE QString read();
-//    Q_INVOKABLE bool write(const QString& data);
 
     QString source() { return mSource; }
 

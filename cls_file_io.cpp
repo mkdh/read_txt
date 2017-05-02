@@ -4,14 +4,7 @@
 
 clsFileIO::clsFileIO()
 {
-
 }
-
-//clsFileIO::FileIO(QObject *parent) :
-//    QObject(parent)
-//{
-
-//}
 
 QString clsFileIO::read()
 {
@@ -46,21 +39,4 @@ QString clsFileIO::read()
 
     return fileContent;
 }
-/*
-bool clsFileIO::write(const QString& data)
-{
-    if (mSource.isEmpty())
-        return false;
 
-    QFile file(mSource);
-    if (!file.open(QFile::WriteOnly | QFile::Truncate))
-        return false;
-
-    QTextStream out(&file);
-    out << data;
-
-    file.close();
-
-    return true;
-}
-*/

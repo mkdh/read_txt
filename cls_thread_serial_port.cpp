@@ -2,7 +2,13 @@
 
 clsThreadSerialPort::clsThreadSerialPort()
 {
-    _setting_default = new QSettings("myapp.ini", QSettings::IniFormat);
+
+#if __APPLE__
+    _setting_default = new QSettings();
+#else
+    _setting_default = new QSettings("/myapp.ini", QSettings::IniFormat);
+#endif
+    qDebug() << _setting_default->fileName();
 }
 
 clsThreadSerialPort::~clsThreadSerialPort()
@@ -57,7 +63,6 @@ void clsThreadSerialPort::run()
                     compare_input = compare_input.right(compare_input.length() - compare_input.indexOf("\r\n") - 2);
                 }
             }
-
         }//while
     }//if
 }

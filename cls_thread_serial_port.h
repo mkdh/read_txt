@@ -4,12 +4,10 @@
 #include <QThread>
 #include <iostream>
 #include <QtSerialPort/QSerialPort>
-//#include <QElapsedTimer>
 
 #include <QDebug>
 #include <QSettings>
 
-//using namespace std;
 
 class clsThreadSerialPort : public QThread
 {
@@ -21,7 +19,6 @@ public:
 private:
     void run();
     QSerialPort serial;
-    //    QElapsedTimer timer;
     bool _b_running_time = true;
     QSettings* _setting_default;
 public slots:

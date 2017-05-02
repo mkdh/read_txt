@@ -13,15 +13,7 @@ ApplicationWindow {
     width: 640
     height: 480
     title: qsTr("Hello World")
-    
-    onWidthChanged: {
-        //        g_cls_thread_serial_port.set_setting_value("WINDOW_WIDTH" ,root_app.width)
-    }
-    
-    onHeightChanged: {
-        //        g_cls_thread_serial_port.set_setting_value("WINDOW_HEIGHT" ,root_app.height)
-        
-    }
+
     Component.onCompleted: {
         root_app.load_setting()
         root_app.open_serial_port()
@@ -36,11 +28,7 @@ ApplicationWindow {
     {
         flickable._b_update_default_content_y = false
         var count_page_column = Math.round(flickable.height / lineHeight) - 1
-        
-        //        if(flickable.contentY + flickable.height - lineHeight - 2 * myText.textMargin < flickable.contentHeight)
-        //        {
-        //            flickable.contentY = flickable.contentY + flickable.height - lineHeight - 2 * myText.textMargin
-        //        }
+
         var move_height = count_page_column * lineHeight
         if(flickable.contentY + move_height < flickable.contentHeight)
         {
@@ -100,9 +88,17 @@ ApplicationWindow {
         if(g_cls_thread_serial_port.get_setting_value("Font_Point_Size") != "")
             myText.font.pointSize = g_cls_thread_serial_port.get_setting_value("Font_Point_Size")
         
-        if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "")
+        if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "" && g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "0")
+        {
             btn_load.content_y = g_cls_thread_serial_port.get_setting_value("CONTENT_Y")
-        
+            flickable._b_update_default_content_y = true ;
+        }
+        else
+        {
+            flickable._b_update_default_content_y = false ;
+        }
+
+
         if(g_cls_thread_serial_port.get_setting_value("FONT_COLOR") != "")
             myText.color = g_cls_thread_serial_port.get_setting_value("FONT_COLOR")
         
@@ -167,7 +163,7 @@ ApplicationWindow {
         }
     }
 
-    Connections{
+    Connections {
         target: g_cls_thread_serial_port
         onSignal_send_to_qml: {
             //txt_debug_message.text += msg + "\r\n"
@@ -355,7 +351,7 @@ ApplicationWindow {
                         
                         onClicked: {
                             //                            b_show_footer = ! b_show_footer
-root_app.open_serial_port()
+                            root_app.open_serial_port()
                         }
                     }
                 }
@@ -386,11 +382,8 @@ root_app.open_serial_port()
                     
                     Component.onCompleted: {
                         console.log("+++++>" + btn_load.content_y + ", " + contentY)
-                        _b_update_default_content_y = true
-                        
                     }
                     onContentYChanged: {
-                        
                         if( btn_load.content_y != 0
                                 && contentY >= 0
                                 && btn_load.content_y != contentY
@@ -405,7 +398,11 @@ root_app.open_serial_port()
                             contentY = btn_load.content_y
                         }
                         rect_current_contex_y.y = -rect_current_contex_y.height * 0.5 + rect_textarea.y + flickable.height * contentY / (flickable.contentHeight - flickable.height )
-                        console.log(rect_current_contex_y.y)
+
+                        if( _b_update_default_content_y )
+                        {
+                            console.log(_b_update_default_content_y + " " +rect_current_contex_y.y)
+                        }
                     }
                     
                     TextArea.flickable: TextArea {
