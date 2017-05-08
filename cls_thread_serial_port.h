@@ -17,15 +17,19 @@ public:
     ~clsThreadSerialPort();
 
 private:
-    void run();
+//    void run();
     QSerialPort serial;
     bool _b_running_time = true;
-    QSettings* _setting_default;
+    QSettings* _setting_default;    QByteArray qba_command;
+
 public slots:
     void slot_send_to_qml(QString msg);
     void set_setting_value(QString msg_key,QString msg_value);
     QString get_setting_value(QString msg_key);
-    bool open_serial_port();
+//    bool open_serial_port();
+    bool slot_open_serial_port();
+    void handleReadyRead();
+
 signals:
     void signal_send_to_qml(QString msg);
     void signal_send_command(QString msg);

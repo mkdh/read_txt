@@ -149,10 +149,10 @@ ApplicationWindow {
             return full_text;
         }
     }
-    
+
     function open_serial_port()
     {
-        var b_open_serial_port =  g_cls_thread_serial_port.open_serial_port()
+        var b_open_serial_port =  g_cls_thread_serial_port.slot_open_serial_port()
         if(b_open_serial_port)
         {
             root_app.title = "serial_port open success"
