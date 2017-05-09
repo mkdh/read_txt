@@ -1,6 +1,6 @@
-import QtQuick 2.7
+import QtQuick 2.5
 import QtQuick.Controls 2.0
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.1
 import FileIO 1.0
 import QtQuick.Controls.Styles 1.4
 
@@ -24,6 +24,9 @@ ApplicationWindow {
     }
     readonly property real lineHeight: (myText.implicitHeight - 2 * myText.textMargin) / myText.lineCount
     property bool b_show_footer: false
+    property string old_command: ""
+
+
     function jump_to_next_page()
     {
         flickable._b_update_default_content_y = false
@@ -98,7 +101,6 @@ ApplicationWindow {
             flickable._b_update_default_content_y = false ;
         }
 
-
         if(g_cls_thread_serial_port.get_setting_value("FONT_COLOR") != "")
             myText.color = g_cls_thread_serial_port.get_setting_value("FONT_COLOR")
         
@@ -111,7 +113,6 @@ ApplicationWindow {
         if(g_cls_thread_serial_port.get_setting_value("WINDOW_HEIGHT") != "")
             root_app.height = g_cls_thread_serial_port.get_setting_value("WINDOW_HEIGHT")
         
-        
         if(g_cls_thread_serial_port.get_setting_value("POS_X") != "")
             root_app.x =  g_cls_thread_serial_port.get_setting_value("POS_X")
         
@@ -120,7 +121,6 @@ ApplicationWindow {
         
         if(g_cls_thread_serial_port.get_setting_value("FOLDER_PATH") != "")
             fileDialog.folder =  g_cls_thread_serial_port.get_setting_value("FOLDER_PATH")
-        
         
         if(g_cls_thread_serial_port.get_setting_value("CONTENT_Y") != "")
             flickable.contentY = btn_load.content_y
@@ -163,6 +163,31 @@ ApplicationWindow {
         }
     }
 
+    function set_command( str_cmd )
+    {
+        if(str_cmd == " FORWARD" || str_cmd == " -OK-")
+        {
+            root_app.jump_to_previous_page()
+        }
+        else if(str_cmd == " REVERSE")
+        {
+            root_app.jump_to_next_page()
+        }
+        else if(str_cmd == " RIGHT")
+        {
+            root_app.jump_to_next_column()
+        }
+        else if(str_cmd == " LEFT")
+        {
+            root_app.jump_to_previous_column()
+        }
+        else if(msg == " 0")
+        {
+            b_show_footer = !b_show_footer
+        }
+    }
+
+
     Connections {
         target: g_cls_thread_serial_port
         onSignal_send_to_qml: {
@@ -170,56 +195,18 @@ ApplicationWindow {
             txt_debug_message.text = msg + "\r\n------------" +  txt_debug_message.text + "\r\n"
             txt_debug_message.text = get_short_text(txt_debug_message.text , 1000)
         }
-        property string old_command: old_command
         
         onSignal_send_command: {
             console.log(msg)
             root_app.title = msg
-            if(msg == " FORWARD" || msg == " -OK-")
+            if( msg != " REPEAT" )
             {
-                
-                old_command = msg
-                root_app.jump_to_previous_page()
+                root_app.set_command( root_app.old_command )
             }
-            else if(msg == " REVERSE")
+            else
             {
-                old_command = msg
-                root_app.jump_to_next_page()
-            }
-            else if(msg == " RIGHT")
-            {
-                old_command = msg
-                root_app.jump_to_next_column()
-            }
-            else if(msg == " LEFT")
-            {
-                old_command = msg
-                root_app.jump_to_previous_column()
-            }
-            else if(msg == " REPEAT")
-            {
-                root_app.title = msg + " " + old_command
-                
-                if(old_command == " FORWARD")
-                {
-                    root_app.jump_to_previous_page()
-                }
-                else if(old_command == " REVERSE" || old_command == " -OK-")
-                {
-                    root_app.jump_to_next_page()
-                }
-                else if(old_command == " RIGHT")
-                {
-                    root_app.jump_to_next_column()
-                }
-                else if(old_command == " LEFT")
-                {
-                    root_app.jump_to_previous_column()
-                }
-            }
-            if(msg == " 0")
-            {
-                b_show_footer = !b_show_footer
+                root_app.old_command = msg
+                root_app.set_command( msg )
             }
         }
     }

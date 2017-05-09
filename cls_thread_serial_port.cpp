@@ -93,8 +93,9 @@ void clsThreadSerialPort::handleReadyRead()
         }
         qba_command.clear();
         slot_send_to_qml(qba_message);
-        */
+        */        
         emit signal_send_command(qba_message);
+        qba_command.clear();
 
     }
     else {

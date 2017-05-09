@@ -1,3 +1,10 @@
+/*
+ cd D:\WeiLun\Program\Qt\read_txt\build-read_txt-Desktop_Qt_5_7_0_MinGW_32bit-Release\release
+
+ windeployqt read_txt.exe --qmldir D:\WeiLun\Program\Qt\read_txt\read_txt-master
+
+
+*/
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <qqmlcontext.h>
